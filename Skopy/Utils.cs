@@ -1,15 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Skopy
+﻿namespace Skopy
 {
     public struct Coord
     {
         public int X;
         public int Y;
+
+        public static bool operator ==(Coord p1, Coord p2)
+        {
+            return p1.X == p2.X && p1.Y == p2.Y;
+        }
+
+        public static bool operator !=(Coord p1, Coord p2)
+        {
+            return p1.X != p2.X || p1.Y != p2.Y;
+        }
     }
 
     public struct CoordF
@@ -20,6 +24,11 @@ namespace Skopy
 
     public static class Utils
     {
+
+        public static void Print(string msg)
+        {
+            Console.WriteLine(msg);
+        }
 
         public static Toy? GetClosestToCoord(this List<Toy> toys, Coord pos)
         {
@@ -36,7 +45,10 @@ namespace Skopy
 
             var foundToy = toys.Where(t => t.coord.X == pos.X && t.coord.Y == pos.Y).FirstOrDefault();
             if (foundToy != null)
+            {
+                Print($"Marked toy as chewed at {foundToy.coord.X}, {foundToy.coord.Y}");
                 foundToy.chewed = true;
+            }
         }
 
         public static Tree? GetClosestToLine(this List<Tree> trees, Coord start, Coord end)
@@ -47,12 +59,12 @@ namespace Skopy
             return trees.MinBy(t => FindDistanceToSegment(t.coord, start, end));
         }
 
-        public static List<Tree> GetInTriangle(this List<Tree> trees, Coord p1, Coord p2, Coord p3)
+        public static List<Tree> GetInTriangle(this List<Tree> trees, Coord pos, Coord anchor, Coord toy)
         {
             if (trees == null || trees.Count == 0)
                 return new List<Tree>();
-
-            return trees.Where(t => PointInTriangle(t.coord, p1, p2, p3)).ToList();
+            
+            return trees.Where(t => PointInTriangle(t.coord, pos, anchor, toy) && t.coord != anchor).ToList();
         }
 
         public static double GetDistance(Coord p1, Coord p2)

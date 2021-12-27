@@ -10,6 +10,26 @@
   <ItemGroup>
     <None Remove="TestFiles\barktree.00.ans" />
     <None Remove="TestFiles\barktree.00.in" />
+    <None Remove="TestFiles\barktree.01.ans" />
+    <None Remove="TestFiles\barktree.01.in" />
+    <None Remove="TestFiles\barktree.02.ans" />
+    <None Remove="TestFiles\barktree.02.in" />
+    <None Remove="TestFiles\barktree.03.ans" />
+    <None Remove="TestFiles\barktree.03.in" />
+    <None Remove="TestFiles\barktree.04.ans" />
+    <None Remove="TestFiles\barktree.04.in" />
+    <None Remove="TestFiles\barktree.05.ans" />
+    <None Remove="TestFiles\barktree.05.in" />
+    <None Remove="TestFiles\barktree.06.ans" />
+    <None Remove="TestFiles\barktree.06.in" />
+    <None Remove="TestFiles\barktree.07.ans" />
+    <None Remove="TestFiles\barktree.07.in" />
+    <None Remove="TestFiles\barktree.08.ans" />
+    <None Remove="TestFiles\barktree.08.in" />
+    <None Remove="TestFiles\barktree.09.ans" />
+    <None Remove="TestFiles\barktree.09.in" />
+    <None Remove="TestFiles\barktree.10.ans" />
+    <None Remove="TestFiles\barktree.10.in" />
   </ItemGroup>
 
   <ItemGroup>
@@ -17,6 +37,66 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="TestFiles\barktree.00.in">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.01.ans">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.01.in">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.02.ans">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.02.in">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.03.ans">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.03.in">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.04.ans">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.04.in">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.05.ans">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.05.in">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.06.ans">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.06.in">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.07.ans">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.07.in">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.08.ans">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.08.in">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.09.ans">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.09.in">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.10.ans">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.10.in">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
