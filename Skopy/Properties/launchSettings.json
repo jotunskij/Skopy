@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Skopy": {
+      "commandName": "Project",
+      "commandLineArgs": "TestFiles/barktree.00.in"
+    }
+  }
+}
