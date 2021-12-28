@@ -6,72 +6,64 @@
         public static double Solve(List<Toy> toys, List<Tree> trees)
         {
             var currentPos = new Coord() { X = 0, Y = 0 };
-            var currentAnchor = new Coord() { X = 0, Y = 0 };
+            var currentTree = new Coord() { X = 0, Y = 0 };
             var totalLength = 0.0;
-            var longestLengthFromAnchor = 0.0;
+            var longestLengthFromTree = 0.0;
             //return RecursiveSolve(toys, trees, currentPos, previousAnchor);
 
             foreach (var nextToy in toys)
             {
                 Utils.Print($"Skopy is at {currentPos.X}, {currentPos.Y}");
-                Utils.Print($"Anchored at {currentAnchor.X}, {currentAnchor.Y}");
-                Utils.Print($"Next toy at {nextToy.coord.X}, {nextToy.coord.Y}");
+                Utils.Print($"Anchored at {currentTree.X}, {currentTree.Y}");
+                Utils.Print($"Next toy at {nextToy.Coord.X}, {nextToy.Coord.Y}");
 
-                // Check triangle between previousAnchor, currentPos and nextToy for anchors
-                var newAnchors = trees.GetInTriangle(currentPos, currentAnchor, nextToy.coord);
+                Coord? nextTree = null;
+                var possibleTrees = trees.GetInTriangle(currentPos, currentTree, nextToy.Coord);
+                Utils.Print($"Possible trees: {possibleTrees.Count}");
 
-                // anchors = get all anchors in original triangle
-                // if anchors
-                //  find closest one
-                //  calculate new triangle currentAnchor -> hit tree -> dog position -> next toy
-                //  (line intersection between currentAnchor -> hit tree and current pos -> next toy)
-                //  add currentAnchor -> hit tree to totalLength
-                //  repeat with new triangle instead of original triangle, reusing set of found trees
-                // if no anchors
-                //  dog reaches new toy
-
-                Coord? nextAnchor = null;
-                if (newAnchors.Count > 1)
+                if (possibleTrees.Count == 0)
                 {
-                    //foreach (var a in newAnchors)
-                    //    Utils.Print($"Found anchor {a.coord.X}, {a.coord.Y}");
-                    nextAnchor = newAnchors.GetClosestToLine(currentAnchor, currentPos).coord;
-                    Utils.Print($"Multiple anchors, using {nextAnchor.Value.X}, {nextAnchor.Value.Y}");
-                }
-                else if (newAnchors.Count == 1)
-                {
-                    nextAnchor = newAnchors[0].coord;
-                    Utils.Print($"Next anchor at {nextAnchor.Value.X}, {nextAnchor.Value.Y}");
-                }
-                else
-                {
-                    Utils.Print($"No anchors from {currentPos.X}, {currentPos.Y} to {nextToy.coord.X}, {nextToy.coord.Y}");
-                }
-
-                if (nextAnchor.HasValue)
-                {
-                    // We have a new anchor
-                    totalLength += Utils.GetDistance(currentAnchor, nextAnchor.Value);
-                    Utils.Print($"New length is {totalLength}");
-                    longestLengthFromAnchor = Utils.GetDistance(nextAnchor.Value, nextToy.coord);
-                    Utils.Print($"Initialized longest length from anchor to {longestLengthFromAnchor}");
-                    currentAnchor = nextAnchor.Value;
-                }
-                else
-                {
-                    var distanceFromAnchor = Utils.GetDistance(currentAnchor, currentPos);
-                    if (distanceFromAnchor > longestLengthFromAnchor)
+                    var distanceFromTree = Utils.GetDistance(currentTree, currentPos);
+                    if (distanceFromTree > longestLengthFromTree)
                     {
-                        longestLengthFromAnchor = distanceFromAnchor;
-                        Utils.Print($"New longest length from anchor is {longestLengthFromAnchor}");
+                        longestLengthFromTree = distanceFromTree;
+                        Utils.Print($"New longest length from tree is {longestLengthFromTree}");
                     }
                 }
-                currentPos = nextToy.coord;
-                //Console.ReadKey();
+                else if (possibleTrees.Count == 1)
+                {
+                    nextTree = possibleTrees[0].Coord;
+                }
+                else
+                {
+                    while (possibleTrees.Count > 0)
+                    {
+                        nextTree = possibleTrees.GetClosestToLine(currentTree, currentPos).Coord;
+                        Utils.Print($"Next tree at {nextTree}");
+                        totalLength += Utils.GetDistance(currentTree, nextTree.Value);
+                        Utils.Print($"Total length is now {totalLength}");
+                        Coord? intersect = null;
+                        int extension = 0;
+                        while (!intersect.HasValue)
+                        {
+                            var leashLineEnd = Utils.ExtendLine(currentTree, nextTree.Value, extension += 1000);
+                            intersect = Utils.LineIntersect(currentTree, leashLineEnd, currentPos, nextToy.Coord);
+                            Utils.Print($"Found intersect at {intersect}");
+                        }
+                        currentTree = nextTree.Value;
+                        currentPos = intersect.Value;
+                        possibleTrees = possibleTrees.GetInTriangle(currentPos, currentTree, nextToy.Coord);
+                        Utils.Print($"Possible trees after prune is {possibleTrees.Count}");
+                    }
+                    longestLengthFromTree = Utils.GetDistance(currentTree, nextToy.Coord);
+                }
+
+                currentPos = nextToy.Coord;
+                Console.ReadKey();
             }
 
             Utils.Print($"No more toys");
-            return totalLength + longestLengthFromAnchor;
+            return totalLength + longestLengthFromTree;
 
         }
 
@@ -97,20 +89,20 @@
                 return Utils.GetDistance(previousAnchor, currentPos);
             }
 
-            Utils.Print($"Closest toy at {closestToy.coord.X}, {closestToy.coord.Y}");
+            Utils.Print($"Closest toy at {closestToy.Coord.X}, {closestToy.Coord.Y}");
 
             // Check triangle between previousAnchor, currentPos and nextToy for anchors
-            var newAnchors = trees.GetInTriangle(currentPos, previousAnchor, closestToy.coord);
+            var newAnchors = trees.GetInTriangle(currentPos, previousAnchor, closestToy.Coord);
 
             Coord? nextAnchor = null;
             if (newAnchors.Count > 1)
             {
-                nextAnchor = newAnchors.GetClosestToLine(previousAnchor, closestToy.coord).coord;
+                nextAnchor = newAnchors.GetClosestToLine(previousAnchor, closestToy.Coord).Coord;
                 Utils.Print($"Multiple anchors");
             }
             else if (newAnchors.Count == 1)
             {
-                nextAnchor = newAnchors[0].coord;
+                nextAnchor = newAnchors[0].Coord;
                 Utils.Print($"Next anchor at {nextAnchor.Value.X}, {nextAnchor.Value.Y}");
             }
             else
@@ -121,9 +113,9 @@
             if (nextAnchor.HasValue)
                 // We have a new anchor
                 return Utils.GetDistance(previousAnchor, nextAnchor.Value) +
-                    RecursiveSolve(toys, trees, closestToy.coord, nextAnchor.Value);
+                    RecursiveSolve(toys, trees, closestToy.Coord, nextAnchor.Value);
             else
-                return RecursiveSolve(toys, trees, closestToy.coord, previousAnchor);
+                return RecursiveSolve(toys, trees, closestToy.Coord, previousAnchor);
         }
 
     }

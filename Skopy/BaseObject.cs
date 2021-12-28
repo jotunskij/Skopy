@@ -8,11 +8,11 @@ namespace Skopy
 {
     public class BaseObject
     {
-        public Coord coord { get; set; }
+        public Coord Coord { get; set; }
 
         public BaseObject(int x, int y)
         {
-            coord = new Coord() { X = x, Y = y };
+            Coord = new Coord() { X = x, Y = y };
         }
     }
 }

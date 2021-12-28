@@ -14,6 +14,11 @@
         {
             return p1.X != p2.X || p1.Y != p2.Y;
         }
+
+        public override string ToString()
+        {
+            return $"({X}, {Y})";
+        }
     }
 
     public struct CoordF
@@ -35,7 +40,7 @@
             if (toys == null || toys.Count == 0)
                 return null;
 
-            return toys.Where(t => !t.chewed).MinBy(t => GetDistance(pos, t.coord));
+            return toys.Where(t => !t.chewed).MinBy(t => GetDistance(pos, t.Coord));
         }
 
         public static void MarkAsChewed(this List<Toy> toys, Coord pos)
@@ -43,10 +48,10 @@
             if (toys == null || toys.Count == 0)
                 return;
 
-            var foundToy = toys.Where(t => t.coord.X == pos.X && t.coord.Y == pos.Y).FirstOrDefault();
+            var foundToy = toys.Where(t => t.Coord.X == pos.X && t.Coord.Y == pos.Y).FirstOrDefault();
             if (foundToy != null)
             {
-                Print($"Marked toy as chewed at {foundToy.coord.X}, {foundToy.coord.Y}");
+                Print($"Marked toy as chewed at {foundToy.Coord.X}, {foundToy.Coord.Y}");
                 foundToy.chewed = true;
             }
         }
@@ -56,7 +61,8 @@
             if (trees == null || trees.Count == 0)
                 return null;
 
-            return trees.MinBy(t => FindDistanceToSegment(t.coord, start, end));
+            return trees.MinBy(t => AngleBetween(start, end, t.Coord));
+            //return trees.MinBy(t => FindDistanceToSegment(t.Coord, start, end));
         }
 
         public static List<Tree> GetInTriangle(this List<Tree> trees, Coord pos, Coord anchor, Coord toy)
@@ -64,12 +70,66 @@
             if (trees == null || trees.Count == 0)
                 return new List<Tree>();
             
-            return trees.Where(t => PointInTriangle(t.coord, pos, anchor, toy) && t.coord != anchor).ToList();
+            Print($"Getting trees contained in {pos}, {anchor}, {toy}");
+            return trees.Where(t => PointInTriangle(t.Coord, pos, anchor, toy) && t.Coord != anchor).ToList();
         }
 
         public static double GetDistance(Coord p1, Coord p2)
         {
             return Math.Sqrt(Math.Pow((p2.X - p1.X), 2) + Math.Pow((p2.Y - p1.Y), 2));
+        }
+
+        // https://stackoverflow.com/questions/1211212/how-to-calculate-an-angle-from-three-points
+
+        public static double AngleBetween(Coord origin, Coord pt1, Coord pt2)
+        {
+            var angle = Math.Atan2(pt2.Y - origin.Y, pt2.X - origin.X) -
+                Math.Atan2(pt1.Y - origin.Y, pt1.X - origin.X);
+            if (angle < 0) 
+                angle = 2 * Math.PI + angle;
+            Print($"Got angle {angle} for {origin} / {pt1} / {pt2}");
+            return angle;
+        }
+
+        // https://stackoverflow.com/questions/13458992/angle-between-two-vectors-2d
+
+        public static double AngleBetween(Coord vector1, Coord vector2)
+        {
+            double sin = vector1.X * vector2.Y - vector2.X * vector1.Y;
+            double cos = vector1.X * vector2.X + vector1.Y * vector2.Y;
+
+            var angle = Math.Atan2(sin, cos) * (180 / Math.PI);
+            Print($"Got angle {angle} for {vector2}");
+            return angle;
+        }
+
+        // https://stackoverflow.com/questions/7740507/extend-a-line-segment-a-specific-distance
+
+        public static Coord ExtendLine(Coord start, Coord end, double lengthFactor)
+        {
+            var lenAB = Math.Sqrt(Math.Pow(start.X - end.X, 2.0) + Math.Pow(start.Y - end.Y, 2.0));
+            var newEnd = new Coord();
+            newEnd.X = (int)(end.X + (end.X - start.X) / lenAB * lengthFactor);
+            newEnd.Y = (int)(end.Y + (end.Y - start.Y) / lenAB * lengthFactor);
+            return newEnd;
+        }
+
+        // https://rosettacode.org/wiki/Find_the_intersection_of_two_lines#C.23
+
+        public static Coord? LineIntersect(Coord l1p1, Coord l1p2, Coord l2p1, Coord l2p2)
+        {
+            double a1 = l1p2.Y - l1p1.Y;
+            double b1 = l1p1.X - l1p2.X;
+            double c1 = a1 * l1p1.X + b1 * l1p1.Y;
+
+            double a2 = l2p2.Y - l2p1.Y;
+            double b2 = l2p1.X - l2p2.X;
+            double c2 = a2 * l2p1.X + b2 * l2p1.Y;
+
+            double delta = a1 * b2 - a2 * b1;
+            //If lines are parallel, the result will be (NaN, NaN).
+            return delta == 0 ? null
+                : new Coord() { X = (int)((b2 * c1 - b1 * c2) / delta), Y = (int)((a1 * c2 - a2 * c1) / delta) };
         }
 
         // The following two functions were stolen from:
