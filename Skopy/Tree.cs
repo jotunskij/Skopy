@@ -9,5 +9,10 @@ namespace Skopy
     public class Tree : BaseObject
     {
         public Tree(int x, int y) : base(x, y) { }
+
+        public Tree Copy()
+        {
+            return new Tree(Coord.X, Coord.Y);
+        }
     }
 }

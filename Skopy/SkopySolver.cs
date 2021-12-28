@@ -6,116 +6,109 @@
         public static double Solve(List<Toy> toys, List<Tree> trees)
         {
             var currentPos = new Coord() { X = 0, Y = 0 };
-            var currentTree = new Coord() { X = 0, Y = 0 };
+            TraverseList.trees.Add(new Tree(0, 0));
             var totalLength = 0.0;
-            var longestLengthFromTree = 0.0;
+            var longestLength = 0.0;
             //return RecursiveSolve(toys, trees, currentPos, previousAnchor);
 
             foreach (var nextToy in toys)
             {
                 Utils.Print($"Skopy is at {currentPos.X}, {currentPos.Y}");
-                Utils.Print($"Anchored at {currentTree.X}, {currentTree.Y}");
+                Utils.Print($"Anchored at {TraverseList.GetCurrentTree().Coord.X}, {TraverseList.GetCurrentTree().Coord.Y}");
                 Utils.Print($"Next toy at {nextToy.Coord.X}, {nextToy.Coord.Y}");
+                Utils.Print($"Traverse list has {TraverseList.trees.Count} elements");
+                Console.ReadKey();
 
-                Coord? nextTree = null;
-                var possibleTrees = trees.GetInTriangle(currentPos, currentTree, nextToy.Coord);
-                Utils.Print($"Possible trees: {possibleTrees.Count}");
-
-                if (possibleTrees.Count == 0)
+                Tree? latestRemovedTree = null; 
+                while (true)
                 {
-                    var distanceFromTree = Utils.GetDistance(currentTree, currentPos);
-                    if (distanceFromTree > longestLengthFromTree)
+                    var heading = new Line(currentPos, nextToy.Coord);
+                    var backTrackIntersect = TraverseList.FindBacktrackIntersect(heading);
+
+                    Utils.Print($"Backtrack intersect is {backTrackIntersect}");
+                    if (backTrackIntersect != null)
                     {
-                        longestLengthFromTree = distanceFromTree;
-                        Utils.Print($"New longest length from tree is {longestLengthFromTree}");
+                        var treesInBackTrack = trees.GetInTriangle(
+                            currentPos, 
+                            TraverseList.GetCurrentTree().Coord,
+                            backTrackIntersect.Value, 
+                            latestRemovedTree);
+                        Utils.Print($"Trees in the way of backtrack is {treesInBackTrack.Count}");
+                        if (treesInBackTrack.Count == 0)
+                        {
+                            Utils.Print($"Backtracking to {backTrackIntersect.Value} and removing last tree");
+                            currentPos = backTrackIntersect.Value;
+                            latestRemovedTree = TraverseList.Backtrack();
+                        }
+                        else
+                        {
+                            // We have a tree that we will attach to before releasing last tree
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        // No intersect with last traverse line
+                        break;
                     }
                 }
-                else if (possibleTrees.Count == 1)
+
+
+                Tree? nextTree = null;
+                var possibleTrees = trees.GetInTriangle(
+                    currentPos, 
+                    TraverseList.GetCurrentTree().Coord, 
+                    nextToy.Coord,
+                    latestRemovedTree);
+                Utils.Print($"Possible trees: {possibleTrees.Count}");
+
+                if (possibleTrees.Count == 1)
                 {
-                    nextTree = possibleTrees[0].Coord;
+                    nextTree = possibleTrees[0];
+                    totalLength += Utils.GetDistance(TraverseList.GetCurrentTree().Coord, nextTree.Coord);
                 }
                 else
                 {
                     while (possibleTrees.Count > 0)
                     {
-                        nextTree = possibleTrees.GetClosestToLine(currentTree, currentPos).Coord;
+                        nextTree = possibleTrees.GetClosestToLine(TraverseList.GetCurrentTree().Coord, currentPos);
                         Utils.Print($"Next tree at {nextTree}");
-                        totalLength += Utils.GetDistance(currentTree, nextTree.Value);
-                        Utils.Print($"Total length is now {totalLength}");
                         Coord? intersect = null;
-                        int extension = 0;
-                        while (!intersect.HasValue)
-                        {
-                            var leashLineEnd = Utils.ExtendLine(currentTree, nextTree.Value, extension += 1000);
-                            intersect = Utils.LineIntersect(currentTree, leashLineEnd, currentPos, nextToy.Coord);
-                            Utils.Print($"Found intersect at {intersect}");
-                        }
-                        currentTree = nextTree.Value;
+                        var leashLineEnd = Utils.ExtendLine(new Line(TraverseList.GetCurrentTree().Coord, nextTree.Coord), 100000);
+                        Utils.FindIntersection(
+                            leashLineEnd, 
+                            new Line(currentPos, nextToy.Coord),
+                            out bool _,
+                            out bool segmentsIntersect,
+                            out intersect, out Coord? _, out Coord? _);
+                        Utils.Print($"Found intersect at {intersect}");
+                        TraverseList.trees.Add(nextTree);
                         currentPos = intersect.Value;
-                        possibleTrees = possibleTrees.GetInTriangle(currentPos, currentTree, nextToy.Coord);
+                        possibleTrees = possibleTrees.GetInTriangle(
+                            currentPos, 
+                            TraverseList.GetCurrentTree().Coord, 
+                            nextToy.Coord, 
+                            latestRemovedTree);
                         Utils.Print($"Possible trees after prune is {possibleTrees.Count}");
                     }
-                    longestLengthFromTree = Utils.GetDistance(currentTree, nextToy.Coord);
                 }
 
                 currentPos = nextToy.Coord;
-                Console.ReadKey();
+
+                var distanceFromTree = Utils.GetDistance(TraverseList.GetCurrentTree().Coord, currentPos);
+                var totalDistance = TraverseList.GetLength() + distanceFromTree;
+                Utils.Print($"Current tree/total distance is {distanceFromTree}/{totalDistance}");
+                if (totalDistance > longestLength)
+                {
+                    longestLength = totalDistance;
+                    Utils.Print($"New longest length is {longestLength}");
+                }
+
             }
 
             Utils.Print($"No more toys");
-            return totalLength + longestLengthFromTree;
+            return longestLength;
 
-        }
-
-        public static double RecursiveSolve(
-            List<Toy> toys,
-            List<Tree> trees,
-            Coord currentPos, 
-            Coord previousAnchor)
-        {
-            Utils.Print($"Skopy is at {currentPos.X}, {currentPos.Y}");
-            Utils.Print($"Anchored at {previousAnchor.X}, {previousAnchor.Y}");
-
-            // Mark toy as chewed
-            toys.MarkAsChewed(currentPos);
-
-            // Find closest toy that is not chewed
-            var closestToy = toys.GetClosestToCoord(currentPos);
-
-            // We've chewed the last toy. Much sad :'(
-            if (closestToy == null)
-            {
-                Utils.Print($"No more toys");
-                return Utils.GetDistance(previousAnchor, currentPos);
-            }
-
-            Utils.Print($"Closest toy at {closestToy.Coord.X}, {closestToy.Coord.Y}");
-
-            // Check triangle between previousAnchor, currentPos and nextToy for anchors
-            var newAnchors = trees.GetInTriangle(currentPos, previousAnchor, closestToy.Coord);
-
-            Coord? nextAnchor = null;
-            if (newAnchors.Count > 1)
-            {
-                nextAnchor = newAnchors.GetClosestToLine(previousAnchor, closestToy.Coord).Coord;
-                Utils.Print($"Multiple anchors");
-            }
-            else if (newAnchors.Count == 1)
-            {
-                nextAnchor = newAnchors[0].Coord;
-                Utils.Print($"Next anchor at {nextAnchor.Value.X}, {nextAnchor.Value.Y}");
-            }
-            else
-            {
-                Utils.Print($"No anchors");
-            }
-
-            if (nextAnchor.HasValue)
-                // We have a new anchor
-                return Utils.GetDistance(previousAnchor, nextAnchor.Value) +
-                    RecursiveSolve(toys, trees, closestToy.Coord, nextAnchor.Value);
-            else
-                return RecursiveSolve(toys, trees, closestToy.Coord, previousAnchor);
         }
 
     }

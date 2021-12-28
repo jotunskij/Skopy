@@ -14,5 +14,10 @@ namespace Skopy
         {
             Coord = new Coord() { X = x, Y = y };
         }
+
+        public override string ToString()
+        {
+            return Coord.ToString();
+        }
     }
 }
