@@ -6,7 +6,7 @@ Skopy the dog
 * "The input file as a command.." unclear if content or file path
 * ".. go after the next toy .." unclear if this is the next one in the list, or the closest one
 * Unclear if the leash gets permanently attached to a tree, or if it can be undone (as in real life)
-* Unclear if post should count as a tree (and hinder movement)
+* Unclear what happens if Skopy runs into a tree
 
 # Instructions
   *   One week from receipt of the test, mail program code and executable file that can handle as many of the tests in the attached zip file as possible to me, Ulf and Victor

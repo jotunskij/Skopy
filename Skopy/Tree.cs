@@ -14,5 +14,6 @@ namespace Skopy
         {
             return new Tree(Coord.X, Coord.Y);
         }
+
     }
 }

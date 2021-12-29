@@ -6,17 +6,18 @@
         public static double Solve(List<Toy> toys, List<Tree> trees)
         {
             var currentPos = new Coord() { X = 0, Y = 0 };
-            TraverseList.trees.Add(new Tree(0, 0));
-            var totalLength = 0.0;
+            TraverseList.AddTree(new Tree(0, 0), 0);
             var longestLength = 0.0;
-            //return RecursiveSolve(toys, trees, currentPos, previousAnchor);
 
             foreach (var nextToy in toys)
             {
+                // TODO: We need to keep track of which way (clockwise, CC) each attachment is oriented
+                // and take this into consideration when unattaching
+
                 Utils.Print($"Skopy is at {currentPos.X}, {currentPos.Y}");
                 Utils.Print($"Anchored at {TraverseList.GetCurrentTree().Coord.X}, {TraverseList.GetCurrentTree().Coord.Y}");
                 Utils.Print($"Next toy at {nextToy.Coord.X}, {nextToy.Coord.Y}");
-                Utils.Print($"Traverse list has {TraverseList.trees.Count} elements");
+                Utils.Print($"Traverse list has {TraverseList.entries.Count} elements");
                 Console.ReadKey();
 
                 Tree? latestRemovedTree = null; 
@@ -53,7 +54,6 @@
                     }
                 }
 
-
                 Tree? nextTree = null;
                 var possibleTrees = trees.GetInTriangle(
                     currentPos, 
@@ -64,8 +64,7 @@
 
                 if (possibleTrees.Count == 1)
                 {
-                    nextTree = possibleTrees[0];
-                    totalLength += Utils.GetDistance(TraverseList.GetCurrentTree().Coord, nextTree.Coord);
+                    TraverseList.AddTree(possibleTrees[0], 0);
                 }
                 else
                 {
@@ -82,7 +81,7 @@
                             out bool segmentsIntersect,
                             out intersect, out Coord? _, out Coord? _);
                         Utils.Print($"Found intersect at {intersect}");
-                        TraverseList.trees.Add(nextTree);
+                        TraverseList.AddTree(nextTree, 0);
                         currentPos = intersect.Value;
                         possibleTrees = possibleTrees.GetInTriangle(
                             currentPos, 

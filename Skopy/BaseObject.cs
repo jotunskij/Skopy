@@ -19,5 +19,15 @@ namespace Skopy
         {
             return Coord.ToString();
         }
+
+        public static bool operator ==(BaseObject p1, BaseObject p2)
+        {
+            return p1.Coord == p2.Coord;
+        }
+
+        public static bool operator !=(BaseObject p1, BaseObject p2)
+        {
+            return p1.Coord != p2.Coord;
+        }
     }
 }
