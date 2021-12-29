@@ -22,6 +22,10 @@ namespace Skopy
 
         public static bool operator ==(BaseObject p1, BaseObject p2)
         {
+            if (p1 is null && p2 is null)
+                return true;
+            if (p1 is null || p2 is null)
+                return false;
             return p1.Coord == p2.Coord;
         }
 

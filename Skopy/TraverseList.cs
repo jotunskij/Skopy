@@ -9,14 +9,22 @@ namespace Skopy
     public struct TraversalEntry
     {
         public Tree tree;
-        public int count;
-        public int orientation;
+        public int clockwiseRotations;
 
-        public TraversalEntry(Tree tree, int orientation)
+        public TraversalEntry(Tree tree, int clockwiseRotations)
         {
             this.tree = tree;
-            this.orientation = orientation;
-            this.count = 1;
+            this.clockwiseRotations = clockwiseRotations;
+        }
+
+        public bool IsOrigin()
+        {
+            return tree.Coord.X == 0 && tree.Coord.Y == 0;
+        }
+
+        public override string ToString()
+        {
+            return $"tree {tree} with rotation {clockwiseRotations}";
         }
     }
 
@@ -24,17 +32,47 @@ namespace Skopy
     {
         public static List<TraversalEntry> entries = new List<TraversalEntry>();
 
-        public static void AddTree(Tree tree, int orientation)
+        public static string ToString()
         {
-            if (entries.Count > 1 && entries.Last().tree == tree)
+            return string.Join(Environment.NewLine, entries);
+        }
+
+        private static bool ClockwiseRotation(Tree tree, Coord nextToy)
+        {
+            var nrOfEntries = entries.Count;
+            if (nrOfEntries > 1)
             {
-                var lastEntry = entries.Last();
-                lastEntry.count++;
+                var lastLeashLine = new Line(entries[nrOfEntries - 1].tree.Coord, entries[nrOfEntries - 2].tree.Coord);
+                var treeToToyLine = new Line(entries[nrOfEntries - 1].tree.Coord, nextToy);
+                var leashArg = Utils.ArgumentOfVector(lastLeashLine);
+                var toyArg = Utils.ArgumentOfVector(treeToToyLine);
+                return leashArg > toyArg;
+            }
+            return false;
+        }
+
+        public static Tree? HandleTreeTraversal(Tree tree, Coord nextToy)
+        {
+            var goingClockwise = ClockwiseRotation(tree, nextToy);
+            var rotation = goingClockwise ? 1 : -1;
+            var entryCount = entries.Count;
+            var lastEntry = entries.Last();
+            if (entryCount > 1 && lastEntry.tree == tree)
+            {
+                lastEntry.clockwiseRotations += rotation;
             }
             else
             {
-                entries.Add(new TraversalEntry(tree, orientation));
+                entries.Add(new TraversalEntry(tree, rotation));
             }
+            
+            if (!lastEntry.IsOrigin() && lastEntry.clockwiseRotations == 0)
+            {
+                var treeToRemove = lastEntry.tree.Copy();
+                entries.Remove(lastEntry);
+                return treeToRemove;
+            }
+            return null;
         }
 
         public static Coord? FindBacktrackIntersect(Line line)
@@ -64,25 +102,6 @@ namespace Skopy
         public static Tree GetCurrentTree()
         {
             return entries.Last().tree;
-        }
-
-        public static Tree? Backtrack()
-        {
-            if (entries.Count > 1)
-            {
-                var lastEntry = entries.Last();
-                if (lastEntry.count > 1)
-                {
-                    lastEntry.count--;
-                }
-                else
-                {
-                    var treeToRemove = lastEntry.tree.Copy();
-                    entries.Remove(lastEntry);
-                    return treeToRemove;
-                }
-            }
-            return null;
         }
 
         public static double GetLength()
