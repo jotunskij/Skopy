@@ -67,9 +67,15 @@
     public static class Utils
     {
 
+        public static bool IsDebug()
+        {
+            return Environment.GetEnvironmentVariable("DEBUG") != null;
+        }
+
         public static void Print(string msg)
         {
-            Console.WriteLine(msg);
+            if (IsDebug())
+                Console.WriteLine(msg);
         }
 
         public static List<Tree> GetInTriangle(
