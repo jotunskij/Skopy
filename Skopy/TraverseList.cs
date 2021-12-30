@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace Skopy
 {
-    public struct TraversalEntry
+    public class TraversalEntry
     {
-        public Tree tree;
-        public int clockwiseRotations;
+        public Tree tree { get; set; }
+        public int clockwiseRotations { get; set; }
 
         public TraversalEntry(Tree tree, int clockwiseRotations)
         {
@@ -28,16 +28,16 @@ namespace Skopy
         }
     }
 
-    public static class TraverseList
+    public class TraverseList
     {
-        public static List<TraversalEntry> entries = new List<TraversalEntry>();
+        public List<TraversalEntry> entries { get; set; } = new List<TraversalEntry>();
 
-        public static string ToString()
+        public string ToString()
         {
             return Environment.NewLine + string.Join(Environment.NewLine, entries);
         }
 
-        private static bool ClockwiseRotation(Tree tree, Coord nextToy)
+        private bool ClockwiseRotation(Tree tree, Coord nextToy)
         {
             var nrOfEntries = entries.Count;
             Line lastLeashLine;
@@ -56,7 +56,7 @@ namespace Skopy
             return difference < 0;
         }
 
-        public static Tree? HandleTreeTraversal(Tree tree, Coord nextToy)
+        public Tree? HandleTreeTraversal(Tree tree, Coord nextToy)
         {
             var goingClockwise = ClockwiseRotation(tree, nextToy);
             var rotation = goingClockwise ? 1 : -1;
@@ -83,12 +83,12 @@ namespace Skopy
             return null;
         }
 
-        public static Tree GetCurrentTree()
+        public Tree GetCurrentTree()
         {
             return entries.Last().tree;
         }
 
-        public static double GetLength()
+        public double GetLength()
         {
             if (entries.Count < 2)
                 return 0;

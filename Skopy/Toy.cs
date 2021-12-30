@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Skopy
+﻿namespace Skopy
 {
     public class Toy : BaseObject
     {
-        public bool chewed { get; set; }
-
+        // Required for json serialization
+        public Toy() : base(0, 0) { }
         public Toy(int x, int y) : base(x, y) { }
     }
 }

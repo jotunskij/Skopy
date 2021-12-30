@@ -12,7 +12,7 @@ namespace Skopy
 
         public BaseObject(int x, int y)
         {
-            Coord = new Coord() { X = x, Y = y };
+            Coord = new Coord(x, y);
         }
 
         public override string ToString()

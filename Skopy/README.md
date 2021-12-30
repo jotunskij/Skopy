@@ -8,6 +8,7 @@ Skopy the dog
 * Unclear if the leash gets permanently attached to a tree, or if it can be undone (as in real life)
 * Unclear what happens if Skopy runs into a tree
 * Unclear what happens if Skopy runs around the same tree multiple times (since it's a point)
+* Unclear target for binary to be submitted
 
 # Instructions
   *   One week from receipt of the test, mail program code and executable file that can handle as many of the tests in the attached zip file as possible to me, Ulf and Victor

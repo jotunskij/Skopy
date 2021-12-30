@@ -8,6 +8,8 @@ namespace Skopy
 {
     public class Tree : BaseObject
     {
+        // Required for json serialization
+        public Tree() : base(0, 0) { }
         public Tree(int x, int y) : base(x, y) { }
 
         public Tree Copy()
