@@ -11,57 +11,11 @@
 
             foreach (var nextToy in toys)
             {
-                // TODO: We need to keep track of which way (clockwise, CC) each attachment is oriented
-                // and take this into consideration when unattaching
-
                 Utils.Print($"Skopy is at {currentPos.X}, {currentPos.Y}");
                 Utils.Print($"Anchored at {TraverseList.GetCurrentTree().Coord.X}, {TraverseList.GetCurrentTree().Coord.Y}");
                 Utils.Print($"Next toy at {nextToy.Coord.X}, {nextToy.Coord.Y}");
                 Utils.Print($"Traverse list is {TraverseList.ToString()}");
-                Console.ReadKey();
-
-                Tree? latestRemovedTree = null;
-                
-                // Check backtracking
-                while (true)
-                {
-                    // Get Skopys current heading
-                    var heading = new Line(currentPos, nextToy.Coord);
-                    // See if he'll intersect the backtracking line
-                    var backTrackIntersect = TraverseList.FindBacktrackIntersect(heading);
-
-                    Utils.Print($"Backtrack intersect is {backTrackIntersect}");
-                    if (backTrackIntersect != null)
-                    {
-                        // Skopy is backtracking, let's make sure he doesn't get stuck
-                        // on another tree before completing backtrack
-                        var treesInBackTrack = trees.GetInTriangle(
-                            currentPos, 
-                            TraverseList.GetCurrentTree().Coord,
-                            backTrackIntersect.Value, 
-                            latestRemovedTree);
-                        Utils.Print($"Trees in the way of backtrack is {treesInBackTrack.Count}");
-                        if (treesInBackTrack.Count == 0)
-                        {
-                            // No trees, release latest leash > tree connection
-                            Utils.Print($"Backtracking to {backTrackIntersect.Value} and removing last tree");
-                            currentPos = backTrackIntersect.Value;
-                            latestRemovedTree = TraverseList.HandleTreeTraversal(
-                                TraverseList.GetCurrentTree(),
-                                nextToy.Coord);
-                        }
-                        else
-                        {
-                            // We have a tree that we will attach to before releasing last tree
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        // No intersect with last traverse line
-                        break;
-                    }
-                }
+                //Console.ReadKey();
 
                 // We've checked backtracking, let's go forward..
                 Tree? nextTree = null;
@@ -70,44 +24,73 @@
                     currentPos, 
                     TraverseList.GetCurrentTree().Coord, 
                     nextToy.Coord,
-                    latestRemovedTree);
+                    null);
                 Utils.Print($"Possible trees: {possibleTrees.Count}");
 
-                if (possibleTrees.Count == 1)
+                while (possibleTrees.Count > 0)
                 {
-                    // Only one tree in the way - attach to it and continue to toy
-                    TraverseList.HandleTreeTraversal(possibleTrees[0], nextToy.Coord);
-                }
-                else
-                {
-                    // Multiple trees blocking
-                    while (possibleTrees.Count > 0)
+                    var secondLastTree = TraverseList.entries.First().tree.Coord;
+                    if (TraverseList.entries.Count() > 2)
                     {
-                        // Find the tree with the shallowest angle against the leash
-                        nextTree = possibleTrees.GetClosestToLine(TraverseList.GetCurrentTree().Coord, currentPos);
-                        Utils.Print($"Next tree at {nextTree}");
-                        Coord? intersect = null;
-                        // Locate where Skopy will be when attaching to tree
-                        var leashLineEnd = Utils.ExtendLine(new Line(TraverseList.GetCurrentTree().Coord, nextTree.Coord), 100000);
-                        Utils.FindIntersection(
-                            leashLineEnd, 
-                            new Line(currentPos, nextToy.Coord),
-                            out bool _,
-                            out bool segmentsIntersect,
-                            out intersect, out Coord? _, out Coord? _);
-                        Utils.Print($"Found intersect at {intersect}");
-                        // Add tree to traverse list
-                        TraverseList.HandleTreeTraversal(nextTree, nextToy.Coord);
-                        // Place Skopy at the intersection
-                        currentPos = intersect.Value;
-                        // Get all possible trees in the new triangle formed
-                        possibleTrees = possibleTrees.GetInTriangle(
-                            currentPos, 
-                            TraverseList.GetCurrentTree().Coord, 
-                            nextToy.Coord, 
-                            latestRemovedTree);
-                        Utils.Print($"Possible trees after prune is {possibleTrees.Count}");
+                        secondLastTree = TraverseList.entries[TraverseList.entries.Count() - 2].tree.Coord;
                     }
+                    var currentTree = TraverseList.GetCurrentTree().Coord;
+                    var treeDistances = new List<IntersectionStruct>();
+                    foreach (var possibleTree in possibleTrees)
+                    {
+                        Coord? intersection;
+                        bool intersects;
+                        Line intersectionLine;
+
+                        if (currentTree == possibleTree.Coord)
+                        {
+                            var backtrackLine = Utils.ExtendLine(new Line(secondLastTree, possibleTree.Coord), 100000);
+                            intersectionLine = new Line(possibleTree.Coord, backtrackLine.p2);
+                        }
+                        else
+                        {
+                            var nextTreeLine = Utils.ExtendLine(new Line(currentTree, possibleTree.Coord), 100000);
+                            intersectionLine = new Line(possibleTree.Coord, nextTreeLine.p2);
+                        }
+
+                        Utils.FindIntersection(
+                            new Line(currentPos, nextToy.Coord),
+                            intersectionLine,
+                            out bool _,
+                            out intersects,
+                            out intersection,
+                            out Coord? _,
+                            out Coord? _);
+
+                        if (intersects)
+                        {
+                            treeDistances.Add(
+                                new IntersectionStruct(
+                                    Utils.GetDistance(intersection.Value, currentPos), 
+                                    possibleTree,
+                                    intersection.Value));
+                        }
+                    }
+
+                    var validIntersections = treeDistances
+                        .Where(t => t.Intersection != currentPos)
+                        .Count();
+                    if (validIntersections == 0)
+                        break;
+
+                    var closestIntersection = treeDistances
+                        .Where(t => t.Intersection != currentPos)
+                        .MinBy(t => t.Distance);
+                    var lastRemoval = TraverseList.HandleTreeTraversal(
+                        closestIntersection.Tree, 
+                        nextToy.Coord);
+                    currentPos = closestIntersection.Intersection;
+
+                    possibleTrees = trees.GetInTriangle(
+                        currentPos,
+                        TraverseList.GetCurrentTree().Coord,
+                        nextToy.Coord,
+                        lastRemoval);
                 }
 
                 // Place Skopy at next toy

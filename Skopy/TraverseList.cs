@@ -24,7 +24,7 @@ namespace Skopy
 
         public override string ToString()
         {
-            return $"tree {tree} with rotation {clockwiseRotations}";
+            return $"{tree} with rotation {clockwiseRotations}";
         }
     }
 
@@ -34,21 +34,26 @@ namespace Skopy
 
         public static string ToString()
         {
-            return string.Join(Environment.NewLine, entries);
+            return Environment.NewLine + string.Join(Environment.NewLine, entries);
         }
 
         private static bool ClockwiseRotation(Tree tree, Coord nextToy)
         {
             var nrOfEntries = entries.Count;
-            if (nrOfEntries > 1)
+            Line lastLeashLine;
+            if (nrOfEntries == 1)
             {
-                var lastLeashLine = new Line(entries[nrOfEntries - 1].tree.Coord, entries[nrOfEntries - 2].tree.Coord);
-                var treeToToyLine = new Line(entries[nrOfEntries - 1].tree.Coord, nextToy);
-                var leashArg = Utils.ArgumentOfVector(lastLeashLine);
-                var toyArg = Utils.ArgumentOfVector(treeToToyLine);
-                return leashArg > toyArg;
+                lastLeashLine = new Line(entries[nrOfEntries - 1].tree.Coord, tree.Coord);
             }
-            return false;
+            else
+            {
+                lastLeashLine = new Line(entries[nrOfEntries - 2].tree.Coord, entries[nrOfEntries - 1].tree.Coord);
+            }
+            var treeToToyLine = new Line(entries[nrOfEntries - 1].tree.Coord, nextToy);
+            var treeAngle = Utils.GetAngleForVector(Utils.LineToVector(treeToToyLine));
+            var leashAngle = Utils.GetAngleForVector(Utils.LineToVector(lastLeashLine));
+            var difference = Utils.GetAngleDifference(treeAngle, leashAngle);
+            return difference < 0;
         }
 
         public static Tree? HandleTreeTraversal(Tree tree, Coord nextToy)
@@ -59,44 +64,23 @@ namespace Skopy
             var lastEntry = entries.Last();
             if (entryCount > 1 && lastEntry.tree == tree)
             {
-                lastEntry.clockwiseRotations += rotation;
+                Utils.Print($"Modifying rotation of {tree} with {rotation}");
+                entries[entryCount - 1] = new TraversalEntry(tree, lastEntry.clockwiseRotations += rotation);
             }
             else
             {
+                Utils.Print($"Attaching to tree {tree} with rotation {rotation}");
                 entries.Add(new TraversalEntry(tree, rotation));
             }
             
             if (!lastEntry.IsOrigin() && lastEntry.clockwiseRotations == 0)
             {
                 var treeToRemove = lastEntry.tree.Copy();
-                entries.Remove(lastEntry);
+                Utils.Print($"Removing tree {treeToRemove}");
+                entries.RemoveAt(entryCount - 1);
                 return treeToRemove;
             }
             return null;
-        }
-
-        public static Coord? FindBacktrackIntersect(Line line)
-        {
-            var nrOfTrees = entries.Count;
-
-            if (nrOfTrees < 2)
-                return null;
-
-            var lastTree = entries[nrOfTrees - 1].tree;
-            var secondLastTree = entries[nrOfTrees - 2].tree;
-            var lastLeashLine = Utils.ExtendLine(new Line(secondLastTree.Coord, lastTree.Coord), 100000);
-            lastLeashLine = new Line(lastTree.Coord, lastLeashLine.p2);
-            Utils.Print($"Finding backtrack intersection between {line} and {lastLeashLine}");
-            Utils.FindIntersection(
-                lastLeashLine,
-                line,
-                out bool _,
-                out bool segmentsIntersects,
-                out Coord? intersect, out Coord? _, out Coord? _);
-            if (segmentsIntersects)
-                return intersect;
-            else
-                return null;
         }
 
         public static Tree GetCurrentTree()

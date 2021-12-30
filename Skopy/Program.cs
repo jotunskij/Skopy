@@ -6,6 +6,8 @@ var toys = new List<Toy>();
 
 // Read file & row numbers
 var inputFile = args[0].ToString();
+Debug.Assert(File.Exists(inputFile));
+
 var inputLines = File.ReadLines(inputFile).ToArray();
 var nrs = inputLines[0].Split(" ");
 var nrOfToys = int.Parse(nrs[0]);
@@ -45,9 +47,5 @@ if (File.Exists(answerFile))
 {
     var answerLines = File.ReadLines(answerFile).ToArray();
     var answer = double.Parse(answerLines[0].Replace(".", ","));
-    //Debug.Assert(Math.Round(answer, 2) == Math.Round(length, 2));
-    Utils.Print($"My answer: {length}, correct answer: {answer}");
+    Utils.Print($"My answer: {Math.Round(length, 2)}, correct answer: {answer}");
 }
-
-// Write solution file
-

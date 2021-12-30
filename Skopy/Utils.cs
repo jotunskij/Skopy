@@ -1,5 +1,19 @@
 ﻿namespace Skopy
 {
+    public struct IntersectionStruct
+    {
+        public double Distance;
+        public Tree Tree;
+        public Coord Intersection;
+
+        public IntersectionStruct(double d, Tree t, Coord i)
+        {
+            Distance = d;
+            Tree = t;
+            Intersection = i;
+        }
+    }
+
     public struct Coord
     {
         public int X;
@@ -35,6 +49,12 @@
             this.p2 = p2;
         }
 
+        public Line(int p1X, int p1Y, int p2X, int p2Y)
+        {
+            p1 = new Coord(p1X, p1Y);
+            p2 = new Coord(p2X, p2Y);
+        }
+
         public Coord p1;
         public Coord p2;
 
@@ -52,38 +72,20 @@
             Console.WriteLine(msg);
         }
 
-        public static Toy? GetClosestToCoord(this List<Toy> toys, Coord pos)
-        {
-            if (toys == null || toys.Count == 0)
-                return null;
-
-            return toys.Where(t => !t.chewed).MinBy(t => GetDistance(pos, t.Coord));
-        }
-
-        public static Tree? GetClosestToLine(this List<Tree> trees, Coord start, Coord end)
-        {
-            if (trees == null || trees.Count == 0)
-                return null;
-
-            return trees.MinBy(t => AngleBetween(start, end, t.Coord));
-            //return trees.MinBy(t => FindDistanceToSegment(t.Coord, start, end));
-        }
-
         public static List<Tree> GetInTriangle(
             this List<Tree> trees, 
             Coord pos, 
             Coord anchor, 
-            Coord toy, 
-            Tree? latestRemovedTree)
+            Coord toy,
+            Tree? excludedTree = null)
         {
             if (trees == null || trees.Count == 0)
                 return new List<Tree>();
             
             Print($"Getting trees contained in {pos}, {anchor}, {toy}");
             return trees
-                .Where(t => PointInTriangle(t.Coord, pos, anchor, toy) && 
-                t.Coord != anchor &&
-                (latestRemovedTree == null || t.Coord != latestRemovedTree.Coord)).ToList();
+                .Where(t => PointInTriangle(t.Coord, pos, anchor, toy) &&
+                    (excludedTree is null || excludedTree.Coord != t.Coord)).ToList();
         }
 
         public static double GetDistance(Coord p1, Coord p2)
@@ -93,46 +95,25 @@
 
         // Math from https://study.com/academy/lesson/complex-numbers-as-vectors.html
 
-        public static double ArgumentOfVector(Line line)
+        public static Coord LineToVector(Line line)
         {
-            var vector = new Coord(line.p1.X - line.p2.X, line.p1.Y - line.p2.Y);
-            if (vector.X > 0)
-            {
-                return Math.Atan(vector.Y / vector.X);
-            } 
-            else if (vector.X < 0 && vector.Y >= 0)
-            {
-                return Math.Atan(vector.Y / vector.X) + Math.PI;
-            } 
-            else if (vector.X < 0 && vector.Y < 0) 
-            {
-                return Math.Atan(vector.Y / vector.X) - Math.PI;
-            }
-            else if (vector.X == 0 && vector.Y > 0)
-            {
-                return Math.PI / 2;
-            }
-            else if (vector.X == 0 && vector.Y < 0)
-            {
-                return -Math.PI / 2;
-            }
-            else
-            {
-                return double.NaN;
-            }
+            return new Coord(line.p2.X - line.p1.X, line.p2.Y - line.p1.Y);
         }
 
-        // https://www.omnicalculator.com/math/angle-between-two-vectors
+        // https://math.stackexchange.com/questions/1649841/signed-angle-difference-without-conditions
 
-        public static double AngleBetween(Coord origin, Coord pt1, Coord pt2)
+        public static double GetAngleDifference(double a1, double a2)
         {
-            var angle = Math.Acos((
-                (pt1.X - origin.X) * (pt2.X - origin.X) + 
-                (pt1.Y - origin.Y) * (pt2.Y - origin.Y)) / 
-                (Math.Sqrt(Math.Pow(pt1.X - origin.X, 2) + Math.Pow(pt1.Y - origin.Y, 2)) * 
-                Math.Sqrt(Math.Pow(pt2.X - origin.X, 2) + Math.Pow(pt2.Y - origin.Y, 2))));
-            Print($"Got angle {angle} for origin {origin}, dog {pt1}, tree {pt2}");
-            return angle;
+            return (a1 - a2 + 540) % 360 - 180;
+        }
+
+        // https://stackoverflow.com/questions/35271222/getting-the-angle-from-a-direction-vector
+
+        public static double GetAngleForVector(Coord vector)
+        {
+            var angle = Math.Atan2(vector.Y, vector.X);
+            var degrees = 180 * angle / Math.PI;
+            return (360 + degrees) % 360;
         }
 
         // https://stackoverflow.com/questions/7740507/extend-a-line-segment-a-specific-distance

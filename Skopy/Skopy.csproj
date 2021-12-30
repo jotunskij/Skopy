@@ -30,6 +30,26 @@
     <None Remove="TestFiles\barktree.09.in" />
     <None Remove="TestFiles\barktree.10.ans" />
     <None Remove="TestFiles\barktree.10.in" />
+    <None Remove="TestFiles\barktree.11.ans" />
+    <None Remove="TestFiles\barktree.11.in" />
+    <None Remove="TestFiles\barktree.12.ans" />
+    <None Remove="TestFiles\barktree.12.in" />
+    <None Remove="TestFiles\barktree.13.ans" />
+    <None Remove="TestFiles\barktree.13.in" />
+    <None Remove="TestFiles\barktree.14.ans" />
+    <None Remove="TestFiles\barktree.14.in" />
+    <None Remove="TestFiles\barktree.15.ans" />
+    <None Remove="TestFiles\barktree.15.in" />
+    <None Remove="TestFiles\barktree.16.ans" />
+    <None Remove="TestFiles\barktree.16.in" />
+    <None Remove="TestFiles\barktree.17.ans" />
+    <None Remove="TestFiles\barktree.17.in" />
+    <None Remove="TestFiles\barktree.18.ans" />
+    <None Remove="TestFiles\barktree.18.in" />
+    <None Remove="TestFiles\barktree.19.ans" />
+    <None Remove="TestFiles\barktree.19.in" />
+    <None Remove="TestFiles\barktree.20.ans" />
+    <None Remove="TestFiles\barktree.20.in" />
   </ItemGroup>
 
   <ItemGroup>
@@ -97,6 +117,66 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="TestFiles\barktree.10.in">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.11.ans">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.11.in">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.12.ans">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.12.in">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.13.ans">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.13.in">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.14.ans">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.14.in">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.15.ans">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.15.in">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.16.ans">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.16.in">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.17.ans">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.17.in">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.18.ans">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.18.in">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.19.ans">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.19.in">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.20.ans">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\barktree.20.in">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

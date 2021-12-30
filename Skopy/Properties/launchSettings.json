@@ -2,7 +2,7 @@
   "profiles": {
     "Skopy": {
       "commandName": "Project",
-      "commandLineArgs": "TestFiles/barktree.06.in"
+      "commandLineArgs": "TestFiles/barktree.11.in"
     }
   }
 }
