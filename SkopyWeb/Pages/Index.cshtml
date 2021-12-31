@@ -1,0 +1,16 @@
+﻿@page
+@model SkopyWeb.Pages.IndexModel
+@{
+
+	<button class="btn btn-primary" onclick="loadProblemFile()">Load problem file</button>
+	<input class="align-middle" type="text" id="problemFileName" />
+	<button class="btn btn-outline-success" id="solveButton" onclick="runSolveStep()">Solve</button>
+	<button class="btn btn-outline-secondary" id="undoButton" onclick="runUndoStep()">Back</button>
+	<br />
+	<span id="longestPath"></span>
+	<span id="answer"></span>
+	<span id="toyNr"></span>
+	<span id="traversalEntries"></span>
+	<div id="canvas"></div>
+
+}

@@ -1,5 +1,5 @@
 ﻿// Simulation state
-var skopySolveStateNew;
+var skopySolveStates = [];
 
 // Misc variables
 var minX;
@@ -17,34 +17,38 @@ function scaleCoord(coord) {
     };
 }
 
+function currentSolveState() {
+    return skopySolveStates[skopySolveStates.length - 1];
+}
+
 function initCanvasSize() {
     two.width = maxX * scaleFactor + screenPadding * 2;
     two.height = maxY * scaleFactor + screenPadding * 2;
 }
 
 function getMinimums() {
-    var toyXMin = skopySolveStateNew.value.toys.reduce((acc, toy) => (
+    var toyXMin = currentSolveState().value.toys.reduce((acc, toy) => (
         acc < toy.coord.x ? acc : toy.coord.x
     ), Infinity);
-    var toyYMin = skopySolveStateNew.value.toys.reduce((acc, toy) => (
+    var toyYMin = currentSolveState().value.toys.reduce((acc, toy) => (
         acc < toy.coord.y ? acc : toy.coord.y
     ), Infinity);
-    var treeXMin = skopySolveStateNew.value.trees.reduce((acc, tree) => (
+    var treeXMin = currentSolveState().value.trees.reduce((acc, tree) => (
         acc < tree.coord.x ? acc : tree.coord.x
     ), Infinity);
-    var treeYMin = skopySolveStateNew.value.trees.reduce((acc, tree) => (
+    var treeYMin = currentSolveState().value.trees.reduce((acc, tree) => (
         acc < tree.coord.y ? acc : tree.coord.y
     ), Infinity);
-    var toyXMax = skopySolveStateNew.value.toys.reduce((acc, toy) => (
+    var toyXMax = currentSolveState().value.toys.reduce((acc, toy) => (
         acc > toy.coord.x ? acc : toy.coord.x
     ), -Infinity);
-    var toyYMax = skopySolveStateNew.value.toys.reduce((acc, toy) => (
+    var toyYMax = currentSolveState().value.toys.reduce((acc, toy) => (
         acc > toy.coord.y ? acc : toy.coord.y
     ), -Infinity);
-    var treeXMax = skopySolveStateNew.value.trees.reduce((acc, tree) => (
+    var treeXMax = currentSolveState().value.trees.reduce((acc, tree) => (
         acc > tree.coord.x ? acc : tree.coord.x
     ), -Infinity);
-    var treeYMax = skopySolveStateNew.value.trees.reduce((acc, tree) => (
+    var treeYMax = currentSolveState().value.trees.reduce((acc, tree) => (
         acc > tree.coord.y ? acc : tree.coord.y
     ), -Infinity);
 
@@ -70,22 +74,23 @@ var elem = document.getElementById('canvas');
 var two = new Two(params).appendTo(elem);
 
 // API
-const apiLoadFile = async (file) => {
+let apiLoadFile = async (file) => {
     const response = await fetch(`http://localhost:5200/loadFile/${file}`);
-    skopySolveStateNew = await response.json();
-    console.log(skopySolveStateNew);
+    skopySolveStates = [];
+    skopySolveStates.push(await response.json());
+    console.log(currentSolveState());
 }
 
-const apiSolve = async () => {
+let apiSolve = async () => {
     document.getElementById('solveButton').disabled = true;
     const response = await fetch('http://localhost:5200/solve', {
         method: 'POST',
-        body: JSON.stringify(skopySolveStateNew.value),
+        body: JSON.stringify(currentSolveState().value),
         headers: {
             'Content-Type': 'application/json'
         }
     });
-    skopySolveStateNew = await response.json();
+    skopySolveStates.push(await response.json());
     document.getElementById('solveButton').disabled = false;
 }
 
@@ -94,6 +99,7 @@ async function loadProblemFile() {
     await apiLoadFile(filename);
     getMinimums();
     document.getElementById('solveButton').disabled = false;
+    document.getElementById('undoButton').disabled = true;
     initCanvasSize();
     clearAndDraw();
 }
@@ -101,6 +107,17 @@ async function loadProblemFile() {
 async function runSolveStep() {
     await apiSolve();
     clearAndDraw();
+    if (skopySolveStates.length > 1) {
+        document.getElementById('undoButton').disabled = false;
+    }
+}
+
+async function runUndoStep() {
+    skopySolveStates.pop();
+    clearAndDraw();
+    if (skopySolveStates.length < 2) {
+        document.getElementById('undoButton').disabled = true;
+    }
 }
 
 function clearAndDraw() {
@@ -108,14 +125,17 @@ function clearAndDraw() {
 
     var elem = document.getElementById('longestPath');
     // Round to 2 decimal places
-    elem.textContent = `Max: ${Math.round(skopySolveStateNew.value.longestLength * 100) / 100}`;
-    var totalToys = skopySolveStateNew.value.toys.length;
+    elem.textContent = `Max: ${Math.round(currentSolveState().value.longestLength * 100) / 100}, `;
+    var totalToys = currentSolveState().value.toys.length;
     elem = document.getElementById('answer');
-    elem.textContent = `Answer: ${skopySolveStateNew.value.answerFromAnsFile}`;
+    elem.textContent = `Answer: ${currentSolveState().value.answerFromAnsFile}, `;
     elem = document.getElementById('toyNr');
-    elem.textContent = `Toys: ${skopySolveStateNew.value.currentToyIndex + 1}/${totalToys}`;
+    elem.textContent = `Toys: ${currentSolveState().value.currentToyIndex + 1}/${totalToys}, `;
+    elem = document.getElementById('traversalEntries');
+    elem.textContent = `TE: ${currentSolveState().value.traverseList.entries.length}`;
 
-    if (skopySolveStateNew.value.solved) {
+
+    if (currentSolveState().value.solved) {
         document.getElementById('solveButton').disabled = true;
     }
 
@@ -125,25 +145,25 @@ function clearAndDraw() {
     originCircle.fill = '#0000FF';
 
     // Draw trees
-    skopySolveStateNew.value.trees.forEach((tree) => {
+    currentSolveState().value.trees.forEach((tree) => {
         var coord = scaleCoord(tree.coord);
         var treeCircle = two.makeCircle(coord.x, coord.y, 5);
         treeCircle.fill = '#FF8000';
     });
 
     // Draw toys
-    skopySolveStateNew.value.toys.forEach((toy) => {
+    currentSolveState().value.toys.forEach((toy) => {
         var coord = scaleCoord(toy.coord);
         var toyRect = two.makeRectangle(coord.x, coord.y, 5, 5);
         toyRect.fill = '#000000';
     });
 
     // Draw leash
-    var traverseLength = skopySolveStateNew.value.traverseList.entries.length;
+    var traverseLength = currentSolveState().value.traverseList.entries.length;
     console.log(traverseLength);
     for (var i = 0; i < traverseLength - 1; i++) {
-        var fromTree = skopySolveStateNew.value.traverseList.entries[i].tree;
-        var toTree = skopySolveStateNew.value.traverseList.entries[i + 1].tree;
+        var fromTree = currentSolveState().value.traverseList.entries[i].tree;
+        var toTree = currentSolveState().value.traverseList.entries[i + 1].tree;
         fromCoord = scaleCoord(fromTree.coord);
         toCoord = scaleCoord(toTree.coord);
         var line = two.makeLine(fromCoord.x, fromCoord.y, toCoord.x, toCoord.y);
@@ -151,11 +171,11 @@ function clearAndDraw() {
     }
 
     // Skopys pos
-    var currentPos = skopySolveStateNew.value.currentPos;
+    var currentPos = currentSolveState().value.currentPos;
     var skopyCoord = scaleCoord(currentPos);
 
     // Draw last leash line
-    var lastTree = skopySolveStateNew.value.traverseList.entries[traverseLength - 1].tree;
+    var lastTree = currentSolveState().value.traverseList.entries[traverseLength - 1].tree;
     var treeCoord = scaleCoord(lastTree.coord);
     var line = two.makeLine(treeCoord.x, treeCoord.y, skopyCoord.x, skopyCoord.y);
     line.fill = '#444444';

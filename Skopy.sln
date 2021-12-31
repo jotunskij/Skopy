@@ -15,6 +15,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkopyWeb", "SkopyWeb\SkopyWeb.csproj", "{0C7E9A4E-2871-476B-A529-71A21F7E8274}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{9D2A21B4-67CA-400A-BB5F-3FEDEE62DD75}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9D2A21B4-67CA-400A-BB5F-3FEDEE62DD75}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9D2A21B4-67CA-400A-BB5F-3FEDEE62DD75}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C7E9A4E-2871-476B-A529-71A21F7E8274}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C7E9A4E-2871-476B-A529-71A21F7E8274}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C7E9A4E-2871-476B-A529-71A21F7E8274}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C7E9A4E-2871-476B-A529-71A21F7E8274}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
