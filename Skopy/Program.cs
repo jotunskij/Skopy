@@ -1,5 +1,4 @@
 ﻿using Skopy;
-using System.Diagnostics;
 
 foreach (var file in args)
 {
@@ -12,23 +11,14 @@ foreach (var file in args)
     double? length = null;
     while (length is null)
         length = skopySolver.Solve();
-    Utils.Print($"Solved length: {length}");
 
     // Validate test case if available
-    if (Utils.IsDebug())
+    var answer = ReadProblemFile.ReadAnswerFile(file);
+    if (answer != -1)
     {
-        var answerFile = Path.ChangeExtension(file.ToString(), "ans");
-        if (File.Exists(answerFile))
-        {
-            var answerLines = File.ReadLines(answerFile).ToArray();
-            var answer = double.Parse(answerLines[0].Replace(".", ","));
-            Utils.Print($"Correct answer: {answer}");
-            if(answer != Math.Round(length.Value, 2)) {
-                Utils.Print($"Failed testfile: {file.ToString()}");
-                Debug.Assert(false);
-            }
-        }
+        Utils.Print($"Correct answer: {answer}");
     }
 
+    // Print final answer
     Console.WriteLine(Math.Round(length.Value, 2));
 }

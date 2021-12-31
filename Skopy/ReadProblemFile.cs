@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Skopy
+﻿namespace Skopy
 {
     public static class ReadProblemFile
     {
@@ -16,7 +10,6 @@ namespace Skopy
 
             // Read file & row numbers
             var inputFile = filepath;
-            //Debug.Assert(File.Exists(inputFile));
 
             var inputLines = File.ReadLines(inputFile).ToArray();
             var nrs = inputLines[0].Split(" ");
@@ -43,14 +36,12 @@ namespace Skopy
             Utils.Print($"trees.Count: {trees.Count}, toys.Count: {toys.Count}");
             Utils.Print("--- SETUP DONE ---" + Environment.NewLine);
 
-            // Pre-flight checks
-            //Debug.Assert(nrOfToys == toys.Count);
-            //Debug.Assert(nrOfTrees == trees.Count);
             return new Tuple<List<Tree>, List<Toy>>(trees, toys);
         }
 
         public static double ReadAnswerFile(string filepath)
         {
+            // Try to read the corresponding answer file to a given .in file
             var answerFile = Path.ChangeExtension(filepath, "ans");
             if (File.Exists(answerFile))
             {

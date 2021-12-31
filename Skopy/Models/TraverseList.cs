@@ -80,7 +80,7 @@ namespace Skopy
                 entries.RemoveAt(entryCount - 1);
                 return treeToRemove;
             }
-            return null;
+            return tree;
         }
 
         public Tree GetCurrentTree()

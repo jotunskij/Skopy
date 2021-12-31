@@ -36,8 +36,6 @@
             return Math.Sqrt(Math.Pow((p2.X - p1.X), 2) + Math.Pow((p2.Y - p1.Y), 2));
         }
 
-        // Math from https://study.com/academy/lesson/complex-numbers-as-vectors.html
-
         public static Coord LineToVector(Line line)
         {
             return new Coord(line.p2.X - line.p1.X, line.p2.Y - line.p1.Y);
@@ -116,22 +114,13 @@
 
             // Find the closest points on the segments.
             if (t1 < 0)
-            {
                 t1 = 0;
-            }
             else if (t1 > 1)
-            {
                 t1 = 1;
-            }
-
             if (t2 < 0)
-            {
                 t2 = 0;
-            }
             else if (t2 > 1)
-            {
                 t2 = 1;
-            }
 
             close_p1 = new Coord((int)(l1.p1.X + dx12 * t1), (int)(l1.p1.Y + dy12 * t1));
             close_p2 = new Coord((int)(l2.p1.X + dx34 * t2), (int)(l2.p1.Y + dy34 * t2));

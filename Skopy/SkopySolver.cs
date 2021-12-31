@@ -97,7 +97,7 @@
                 var closestIntersection = treeDistances
                     .Where(t => t.Intersection != currentPos)
                     .MinBy(t => t.Distance);
-                var lastRemoval = traverseList.HandleTreeTraversal(
+                var lastModified = traverseList.HandleTreeTraversal(
                     closestIntersection.Tree, 
                     nextToy.Coord);
                 currentPos = closestIntersection.Intersection;
@@ -106,7 +106,7 @@
                     currentPos,
                     traverseList.GetCurrentTree().Coord,
                     nextToy.Coord,
-                    lastRemoval);
+                    lastModified);
             }
 
             // Place Skopy at next toy
