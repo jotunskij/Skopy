@@ -1,10 +1,26 @@
-﻿// State for simulation
-var skopySolveStateOld;
+﻿// Simulation state
 var skopySolveStateNew;
 
 // Misc variables
 var minX;
 var minY;
+var maxX;
+var maxY;
+var scaleFactor;
+const screenPadding = 100;
+
+function scaleCoord(coord) {
+    return {
+        'x': (coord.x + minX) * scaleFactor + screenPadding,
+        // Invert y
+        'y': (-coord.y + minY) * scaleFactor + screenPadding
+    };
+}
+
+function initCanvasSize() {
+    two.width = maxX * scaleFactor + screenPadding * 2;
+    two.height = maxY * scaleFactor + screenPadding * 2;
+}
 
 function getMinimums() {
     var toyXMin = skopySolveStateNew.value.toys.reduce((acc, toy) => (
@@ -19,11 +35,31 @@ function getMinimums() {
     var treeYMin = skopySolveStateNew.value.trees.reduce((acc, tree) => (
         acc < tree.coord.y ? acc : tree.coord.y
     ), Infinity);
+    var toyXMax = skopySolveStateNew.value.toys.reduce((acc, toy) => (
+        acc > toy.coord.x ? acc : toy.coord.x
+    ), -Infinity);
+    var toyYMax = skopySolveStateNew.value.toys.reduce((acc, toy) => (
+        acc > toy.coord.y ? acc : toy.coord.y
+    ), -Infinity);
+    var treeXMax = skopySolveStateNew.value.trees.reduce((acc, tree) => (
+        acc > tree.coord.x ? acc : tree.coord.x
+    ), -Infinity);
+    var treeYMax = skopySolveStateNew.value.trees.reduce((acc, tree) => (
+        acc > tree.coord.y ? acc : tree.coord.y
+    ), -Infinity);
 
     minX = toyXMin < treeXMin ? Math.abs(toyXMin) : Math.abs(treeXMin);
     minY = toyYMin < treeYMin ? Math.abs(toyYMin) : Math.abs(treeYMin);
+    maxX = toyXMax > treeXMax ? Math.abs(toyXMax) : Math.abs(treeXMax);
+    maxY = toyYMax > treeYMax ? Math.abs(toyYMax) : Math.abs(treeYMax);
+    maxX += minX;
+    maxY += minY;
+    scaleFactor = maxX > maxY ? 500 / maxX : 500 / maxY;
     console.log('minY: ' + minY);
     console.log('minX: ' + minX);
+    console.log('maxY: ' + maxY);
+    console.log('maxX: ' + maxX);
+    console.log('scaleFactor: ' + scaleFactor);
 }
 
 // Initialize two.js
@@ -32,8 +68,6 @@ var params = {
 };
 var elem = document.getElementById('canvas');
 var two = new Two(params).appendTo(elem);
-two.width = 1000;
-two.height = 1000;
 
 // API
 const apiLoadFile = async (file) => {
@@ -43,7 +77,7 @@ const apiLoadFile = async (file) => {
 }
 
 const apiSolve = async () => {
-    console.log(skopySolveStateNew.value);
+    document.getElementById('solveButton').disabled = true;
     const response = await fetch('http://localhost:5200/solve', {
         method: 'POST',
         body: JSON.stringify(skopySolveStateNew.value),
@@ -51,14 +85,16 @@ const apiSolve = async () => {
             'Content-Type': 'application/json'
         }
     });
-    //skopySolveStateOld = skopySolveStateNew;
     skopySolveStateNew = await response.json();
+    document.getElementById('solveButton').disabled = false;
 }
 
 async function loadProblemFile() {
     var filename = document.getElementById('problemFileName').value;
     await apiLoadFile(filename);
     getMinimums();
+    document.getElementById('solveButton').disabled = false;
+    initCanvasSize();
     clearAndDraw();
 }
 
@@ -70,47 +106,63 @@ async function runSolveStep() {
 function clearAndDraw() {
     two.clear();
 
-    const coordScaleFactor = 0.05;
+    var elem = document.getElementById('longestPath');
+    // Round to 2 decimal places
+    elem.textContent = `Max: ${Math.round(skopySolveStateNew.value.longestLength * 100) / 100}`;
+    var totalToys = skopySolveStateNew.value.toys.length;
+    elem = document.getElementById('answer');
+    elem.textContent = `Answer: ${skopySolveStateNew.value.answerFromAnsFile}`;
+    elem = document.getElementById('toyNr');
+    elem.textContent = `Toys: ${skopySolveStateNew.value.currentToyIndex + 1}/${totalToys}`;
 
+    if (skopySolveStateNew.value.solved) {
+        document.getElementById('solveButton').disabled = true;
+    }
+
+    // Draw origin
+    var origin = scaleCoord({ 'x': 0, 'y': 0 });
+    var originCircle = two.makeCircle(origin.x, origin.y, 3);
+    originCircle.fill = '#0000FF';
+
+    // Draw trees
     skopySolveStateNew.value.trees.forEach((tree) => {
-        var treeCircle = two.makeCircle((tree.coord.x + minX) * coordScaleFactor, (tree.coord.y + minY) * coordScaleFactor, 5);
+        var coord = scaleCoord(tree.coord);
+        var treeCircle = two.makeCircle(coord.x, coord.y, 5);
         treeCircle.fill = '#FF8000';
     });
 
+    // Draw toys
     skopySolveStateNew.value.toys.forEach((toy) => {
-        var toyRect = two.makeRectangle((toy.coord.x + minX) * coordScaleFactor, (toy.coord.y + minY) * coordScaleFactor, 5, 5);
+        var coord = scaleCoord(toy.coord);
+        var toyRect = two.makeRectangle(coord.x, coord.y, 5, 5);
         toyRect.fill = '#000000';
     });
 
+    // Draw leash
+    var traverseLength = skopySolveStateNew.value.traverseList.entries.length;
+    console.log(traverseLength);
+    for (var i = 0; i < traverseLength - 1; i++) {
+        var fromTree = skopySolveStateNew.value.traverseList.entries[i].tree;
+        var toTree = skopySolveStateNew.value.traverseList.entries[i + 1].tree;
+        fromCoord = scaleCoord(fromTree.coord);
+        toCoord = scaleCoord(toTree.coord);
+        var line = two.makeLine(fromCoord.x, fromCoord.y, toCoord.x, toCoord.y);
+        line.fill = '#444444';
+    }
+
+    // Skopys pos
     var currentPos = skopySolveStateNew.value.currentPos;
-    var skopyStar = two.makeStar((currentPos.x + minX) * coordScaleFactor, (currentPos.y + minY) * coordScaleFactor, 10, 10, 5);
+    var skopyCoord = scaleCoord(currentPos);
+
+    // Draw last leash line
+    var lastTree = skopySolveStateNew.value.traverseList.entries[traverseLength - 1].tree;
+    var treeCoord = scaleCoord(lastTree.coord);
+    var line = two.makeLine(treeCoord.x, treeCoord.y, skopyCoord.x, skopyCoord.y);
+    line.fill = '#444444';
+
+    // Draw skopy
+    var skopyStar = two.makeStar(skopyCoord.x, skopyCoord.y, 10, 10, 5);
     skopyStar.fill = '#00FF00';
 
     two.update();
 }
-
-/*
-// Two.js has convenient methods to make shapes and insert them into the scene.
-var radius = 50;
-var x = two.width * 0.5;
-var y = two.height * 0.5 - radius * 1.25;
-var circle = two.makeCircle(x, y, radius);
-
-y = two.height * 0.5 + radius * 1.25;
-var width = 100;
-var height = 100;
-var rect = two.makeRectangle(x, y, width, height);
-
-// The object returned has many stylable properties:
-circle.fill = '#FF8000';
-// And accepts all valid CSS color:
-circle.stroke = 'orangered';
-circle.linewidth = 5;
-
-rect.fill = 'rgb(0, 200, 255)';
-rect.opacity = 0.75;
-rect.noStroke();
-
-// Don’t forget to tell two to draw everything to the screen
-two.update();
-*/

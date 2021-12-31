@@ -6,8 +6,10 @@
         public List<Tree> trees { get; set; }
         public Coord currentPos { get; set; }
         public double longestLength { get; set; }
-        public Toy? currentToy { get; set; }
+        public int currentToyIndex { get; set; } = 0;
         public TraverseList traverseList { get; set; } = new TraverseList();
+        public bool solved { get; set; }
+        public double answerFromAnsFile { get; set; }
 
         public Coord GetCurrentPos()
         {
@@ -26,8 +28,7 @@
         // Returns null while not solved
         public double? Solve()
         {
-            if (currentToy is null)
-                currentToy = toys.First();
+            var currentToy = toys[currentToyIndex];
             var nextToy = currentToy;
             Utils.Print($"Skopy is at {currentPos.X}, {currentPos.Y}");
             Utils.Print($"Anchored at {traverseList.GetCurrentTree().Coord.X}, {traverseList.GetCurrentTree().Coord.Y}");
@@ -124,14 +125,16 @@
                 Utils.Print($"New longest length is {longestLength}");
             }
 
-            if (currentToy.Coord == toys.Last().Coord)
+            if (currentToyIndex == toys.Count - 1)
             {
                 // Much sad. No chew. :'(
                 Utils.Print($"No more toys");
+                solved = true;
                 return longestLength;
             }
             else
             {
+                currentToyIndex++;
                 return null;
             }
 

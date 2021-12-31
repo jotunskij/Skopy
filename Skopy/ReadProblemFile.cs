@@ -49,5 +49,17 @@ namespace Skopy
             return new Tuple<List<Tree>, List<Toy>>(trees, toys);
         }
 
+        public static double ReadAnswerFile(string filepath)
+        {
+            var answerFile = Path.ChangeExtension(filepath, "ans");
+            if (File.Exists(answerFile))
+            {
+                var answerLines = File.ReadLines(answerFile).ToArray();
+                var answer = double.Parse(answerLines[0].Replace(".", ","));
+                return answer;
+            }
+            return -1;
+        }
+
     }
 }
