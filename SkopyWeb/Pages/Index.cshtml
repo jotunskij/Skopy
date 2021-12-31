@@ -4,9 +4,11 @@
 
 	<button class="btn btn-primary" onclick="loadProblemFile()">Load problem file</button>
 	<input class="align-middle" type="text" id="problemFileName" />
-	<button class="btn btn-outline-success" id="solveButton" onclick="runSolveStep()">Solve</button>
+	<button class="btn btn-success" id="solveButton" onclick="solveUntilEnd()">Solve</button>
+	<button class="btn btn-outline-success" id="stepButton" onclick="runSolveStep()">Step</button>
 	<button class="btn btn-outline-secondary" id="undoButton" onclick="runUndoStep()">Back</button>
 	<br />
+	<span id="debugData"></span>
 	<span id="longestPath"></span>
 	<span id="answer"></span>
 	<span id="toyNr"></span>

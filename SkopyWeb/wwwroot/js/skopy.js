@@ -8,11 +8,13 @@ var maxX;
 var maxY;
 var scaleFactor;
 const screenPadding = 100;
+const canvasWidth = 500;
+const canvasHeight = 500;
 
 function scaleCoord(coord) {
     return {
         'x': (coord.x + minX) * scaleFactor + screenPadding,
-        // Invert y
+        // Invert y (0,0 has y going +down, while cartesian has y going -down)
         'y': (-coord.y + minY) * scaleFactor + screenPadding
     };
 }
@@ -21,11 +23,16 @@ function currentSolveState() {
     return skopySolveStates[skopySolveStates.length - 1];
 }
 
+// Pad the canvas to make sure we have a little space
+// for the edge values
 function initCanvasSize() {
     two.width = maxX * scaleFactor + screenPadding * 2;
     two.height = maxY * scaleFactor + screenPadding * 2;
 }
 
+// Calculate minimum and maximum X/Y values
+// From this we can calculate a scale factor to fit the shapes
+// to the canvas
 function getMinimums() {
     var toyXMin = currentSolveState().value.toys.reduce((acc, toy) => (
         acc < toy.coord.x ? acc : toy.coord.x
@@ -58,12 +65,7 @@ function getMinimums() {
     maxY = toyYMax > treeYMax ? Math.abs(toyYMax) : Math.abs(treeYMax);
     maxX += minX;
     maxY += minY;
-    scaleFactor = maxX > maxY ? 500 / maxX : 500 / maxY;
-    console.log('minY: ' + minY);
-    console.log('minX: ' + minX);
-    console.log('maxY: ' + maxY);
-    console.log('maxX: ' + maxX);
-    console.log('scaleFactor: ' + scaleFactor);
+    scaleFactor = maxX > maxY ? canvasWidth / maxX : canvasHeight / maxY;
 }
 
 // Initialize two.js
@@ -82,7 +84,7 @@ let apiLoadFile = async (file) => {
 }
 
 let apiSolve = async () => {
-    document.getElementById('solveButton').disabled = true;
+    document.getElementById('stepButton').disabled = true;
     const response = await fetch('http://localhost:5200/solve', {
         method: 'POST',
         body: JSON.stringify(currentSolveState().value),
@@ -91,19 +93,30 @@ let apiSolve = async () => {
         }
     });
     skopySolveStates.push(await response.json());
-    document.getElementById('solveButton').disabled = false;
+    document.getElementById('stepButton').disabled = false;
 }
 
+// Load .in file and initialize everything
 async function loadProblemFile() {
     var filename = document.getElementById('problemFileName').value;
     await apiLoadFile(filename);
     getMinimums();
     document.getElementById('solveButton').disabled = false;
+    document.getElementById('stepButton').disabled = false;
     document.getElementById('undoButton').disabled = true;
     initCanvasSize();
     clearAndDraw();
 }
 
+// Solve the entire problem
+async function solveUntilEnd() {
+    document.getElementById('solveButton').disabled = true;
+    while (!currentSolveState().value.solved) {
+        await runSolveStep();
+    }
+}
+
+// Run one step of the solution
 async function runSolveStep() {
     await apiSolve();
     clearAndDraw();
@@ -112,28 +125,28 @@ async function runSolveStep() {
     }
 }
 
+// Back up one step in the solution
 async function runUndoStep() {
     skopySolveStates.pop();
     clearAndDraw();
     if (skopySolveStates.length < 2) {
         document.getElementById('undoButton').disabled = true;
     }
+    document.getElementById('stepButton').disabled = false;
+    document.getElementById('solveButton').disabled = false;
 }
 
+// Draw everything on screen
 function clearAndDraw() {
     two.clear();
 
-    var elem = document.getElementById('longestPath');
-    // Round to 2 decimal places
-    elem.textContent = `Max: ${Math.round(currentSolveState().value.longestLength * 100) / 100}, `;
+    // Print some helpful data regarding the current state
     var totalToys = currentSolveState().value.toys.length;
-    elem = document.getElementById('answer');
-    elem.textContent = `Answer: ${currentSolveState().value.answerFromAnsFile}, `;
-    elem = document.getElementById('toyNr');
-    elem.textContent = `Toys: ${currentSolveState().value.currentToyIndex + 1}/${totalToys}, `;
-    elem = document.getElementById('traversalEntries');
-    elem.textContent = `TE: ${currentSolveState().value.traverseList.entries.length}`;
-
+    var elem = document.getElementById('debugData');
+    elem.textContent = `Max: ${Math.round(currentSolveState().value.longestLength * 100) / 100}, ` +
+        `Answer: ${currentSolveState().value.answerFromAnsFile}, ` +
+        `Toys: ${currentSolveState().value.currentToyIndex + 1}/${totalToys}, ` +
+        `TE: ${currentSolveState().value.traverseList.entries.length}`;
 
     if (currentSolveState().value.solved) {
         document.getElementById('solveButton').disabled = true;
@@ -160,7 +173,6 @@ function clearAndDraw() {
 
     // Draw leash
     var traverseLength = currentSolveState().value.traverseList.entries.length;
-    console.log(traverseLength);
     for (var i = 0; i < traverseLength - 1; i++) {
         var fromTree = currentSolveState().value.traverseList.entries[i].tree;
         var toTree = currentSolveState().value.traverseList.entries[i + 1].tree;
