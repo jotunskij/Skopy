@@ -1,6 +1,9 @@
 # Skopy
 Skopy the dog
 
+# How to build for linux
+`dotnet publish --runtime linux-x64`
+
 # Instruction unclarities
 * Order of coordinates in .in file
 * "The input file as a command.." unclear if content or file path
