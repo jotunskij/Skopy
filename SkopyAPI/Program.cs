@@ -21,7 +21,7 @@ app.MapGet("/loadFile/{filename}", (string filename) =>
     var fullPath = Path.Combine(problemFileDirectory, filename);
     var treesAndToys = Skopy.ReadProblemFile.ReadFile(fullPath);
     skopySolver.Init(treesAndToys.Item2, treesAndToys.Item1);
-    skopySolver.answerFromAnsFile = Skopy.ReadProblemFile.ReadAnswerFile(fullPath);
+    skopySolver.AnswerFromAnsFile = Skopy.ReadProblemFile.ReadAnswerFile(fullPath);
     return new JsonResult(skopySolver);
 });
 

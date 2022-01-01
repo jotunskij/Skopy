@@ -62,9 +62,11 @@
         public static Line ExtendLine(Line line, double lengthFactor)
         {
             var lenAB = Math.Sqrt(Math.Pow(line.p1.X - line.p2.X, 2.0) + Math.Pow(line.p1.Y - line.p2.Y, 2.0));
-            var newEnd = new Coord();
-            newEnd.X = (int)(line.p2.X + (line.p2.X - line.p1.X) / lenAB * lengthFactor);
-            newEnd.Y = (int)(line.p2.Y + (line.p2.Y - line.p1.Y) / lenAB * lengthFactor);
+            var newEnd = new Coord
+            {
+                X = (int)(line.p2.X + (line.p2.X - line.p1.X) / lenAB * lengthFactor),
+                Y = (int)(line.p2.Y + (line.p2.Y - line.p1.Y) / lenAB * lengthFactor)
+            };
             return new Line(line.p1, newEnd);
         }
 

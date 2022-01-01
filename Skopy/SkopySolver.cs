@@ -2,46 +2,46 @@
 {
     public class SkopySolver
     {
-        public List<Toy> toys { get; set; } = new List<Toy>();
-        public List<Tree> trees { get; set; } = new List<Tree>();
-        public Coord currentPos { get; set; } = new Coord();
-        public double longestLength { get; set; }
-        public int currentToyIndex { get; set; } = 0;
-        public TraverseList traverseList { get; set; } = new TraverseList();
-        public bool solved { get; set; }
-        public double answerFromAnsFile { get; set; }
+        public List<Toy> Toys { get; set; } = new List<Toy>();
+        public List<Tree> Trees { get; set; } = new List<Tree>();
+        public Coord CurrentPos { get; set; } = new Coord();
+        public double LongestLength { get; set; }
+        public int CurrentToyIndex { get; set; } = 0;
+        public TraverseList TraverseList { get; set; } = new TraverseList();
+        public bool Solved { get; set; }
+        public double AnswerFromAnsFile { get; set; }
 
         public Coord GetCurrentPos()
         {
-            return currentPos;
+            return CurrentPos;
         }
 
         public void Init(List<Toy> toys, List<Tree> trees)
         {
-            this.toys = toys;
-            this.trees = trees;
-            currentPos = new Coord(0, 0);
-            traverseList.entries.Add(new TraversalEntry(new Tree(0, 0), 1));
-            longestLength = 0.0;
+            this.Toys = toys;
+            this.Trees = trees;
+            CurrentPos = new Coord(0, 0);
+            TraverseList.Entries.Add(new TraversalEntry(new Tree(0, 0), 1));
+            LongestLength = 0.0;
         }
 
         // Returns null while not solved, answer when solved
         public double? Solve()
         {
             // Get the next toy in the list
-            var currentToy = toys[currentToyIndex];
+            var currentToy = Toys[CurrentToyIndex];
             var nextToy = currentToy;
-            Utils.Print($"Skopy is at {currentPos.X}, {currentPos.Y}");
-            Utils.Print($"Anchored at {traverseList.GetCurrentTree().Coord.X}, {traverseList.GetCurrentTree().Coord.Y}");
+            Utils.Print($"Skopy is at {CurrentPos.X}, {CurrentPos.Y}");
+            Utils.Print($"Anchored at {TraverseList.GetCurrentTree().Coord.X}, {TraverseList.GetCurrentTree().Coord.Y}");
             Utils.Print($"Next toy at {nextToy.Coord.X}, {nextToy.Coord.Y}");
-            Utils.Print($"Traverse list is {traverseList.ToString()}");
+            Utils.Print($"Traverse list is {TraverseList}");
             //Console.ReadKey();
 
             // Find all trees that are possible hits
             // using the triangle formed by Skopy, the currently attached tree and the next toy
-            var possibleTrees = trees.GetInTriangle(
-                currentPos, 
-                traverseList.GetCurrentTree().Coord, 
+            var possibleTrees = Trees.GetInTriangle(
+                CurrentPos, 
+                TraverseList.GetCurrentTree().Coord, 
                 nextToy.Coord,
                 null);
             Utils.Print($"Possible trees: {possibleTrees.Count}");
@@ -49,19 +49,17 @@
             while (possibleTrees.Count > 0)
             {
                 // Get our second to last and last attached trees (if available)
-                var secondLastTree = traverseList.entries.First().tree.Coord;
-                if (traverseList.entries.Count() > 2)
+                var secondLastTree = TraverseList.Entries.First().Tree.Coord;
+                if (TraverseList.Entries.Count > 2)
                 {
-                    secondLastTree = traverseList.entries[traverseList.entries.Count() - 2].tree.Coord;
+                    secondLastTree = TraverseList.Entries[^2].Tree.Coord;
                 }
-                var currentTree = traverseList.GetCurrentTree().Coord;
+                var currentTree = TraverseList.GetCurrentTree().Coord;
 
                 // Loop all the possible tree hits
                 var treeDistances = new List<IntersectionStruct>();
                 foreach (var possibleTree in possibleTrees)
                 {
-                    Coord? intersection;
-                    bool intersects;
                     Line intersectionLine;
 
                     if (currentTree == possibleTree.Coord)
@@ -85,11 +83,11 @@
                     // Use the previously calculated intersection line to get at what point Skopy
                     // will either attach och detach from the tree
                     Utils.FindIntersection(
-                        new Line(currentPos, nextToy.Coord),
+                        new Line(CurrentPos, nextToy.Coord),
                         intersectionLine,
                         out bool _,
-                        out intersects,
-                        out intersection,
+                        out bool intersects,
+                        out Coord? intersection,
                         out Coord? _,
                         out Coord? _);
 
@@ -98,7 +96,7 @@
                         // If the lines intersect, we'll add the intersection data to a list
                         treeDistances.Add(
                             new IntersectionStruct(
-                                Utils.GetDistance(intersection, currentPos), 
+                                Utils.GetDistance(intersection, CurrentPos), 
                                 possibleTree,
                                 intersection));
                     }
@@ -106,14 +104,14 @@
 
                 // Make sure we only compute valid intersections
                 var validIntersections = treeDistances
-                    .Where(t => t.Intersection != currentPos)
+                    .Where(t => t.Intersection != CurrentPos)
                     .Count();
                 if (validIntersections == 0)
                     break;
 
                 // Get the closest intersection to Skopy
                 var closestIntersection = treeDistances
-                    .Where(t => t.Intersection != currentPos)
+                    .Where(t => t.Intersection != CurrentPos)
                     .MinBy(t => t.Distance);
 
                 // Null reference safe guard
@@ -121,49 +119,49 @@
                     break;
 
                 // Process the attaching/detaching tree in our traversal list
-                var lastModified = traverseList.HandleTreeTraversal(
+                var lastModified = TraverseList.HandleTreeTraversal(
                     closestIntersection.Tree, 
                     nextToy.Coord);
                 
                 // Place Skopy at our intersection
-                currentPos = closestIntersection.Intersection;
+                CurrentPos = closestIntersection.Intersection;
 
                 // Get new possible tree hits given Skopys new position,
                 // making sure we don't include the newly processed tree in the calcuations
-                possibleTrees = trees.GetInTriangle(
-                    currentPos,
-                    traverseList.GetCurrentTree().Coord,
+                possibleTrees = Trees.GetInTriangle(
+                    CurrentPos,
+                    TraverseList.GetCurrentTree().Coord,
                     nextToy.Coord,
                     lastModified);
             }
 
             // Place Skopy at next toy
-            currentPos = nextToy.Coord;
+            CurrentPos = nextToy.Coord;
 
             // *chew chew*
 
             // Keep track of current tree + farthest toy, if that should happen
             // to be longer than the completed "course"
-            var distanceFromTree = Utils.GetDistance(traverseList.GetCurrentTree().Coord, currentPos);
-            var totalDistance = traverseList.GetLength() + distanceFromTree;
+            var distanceFromTree = Utils.GetDistance(TraverseList.GetCurrentTree().Coord, CurrentPos);
+            var totalDistance = TraverseList.GetLength() + distanceFromTree;
             Utils.Print($"Current tree/total distance is {distanceFromTree}/{totalDistance}");
-            if (totalDistance > longestLength)
+            if (totalDistance > LongestLength)
             {
-                longestLength = totalDistance;
-                Utils.Print($"New longest length is {longestLength}");
+                LongestLength = totalDistance;
+                Utils.Print($"New longest length is {LongestLength}");
             }
 
-            if (currentToyIndex == toys.Count - 1)
+            if (CurrentToyIndex == Toys.Count - 1)
             {
                 // Much sad. No chew. :'(
                 Utils.Print($"No more toys");
-                solved = true;
-                return longestLength;
+                Solved = true;
+                return LongestLength;
             }
             else
             {
                 // MOAR TOYS!!11
-                currentToyIndex++;
+                CurrentToyIndex++;
                 return null;
             }
 
